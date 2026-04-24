@@ -5,13 +5,17 @@ const bfhlRouter = require('./routes/bfhl');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// CORS — open for all origins (evaluator calls from unknown origin per spec)
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-app.options('*', cors()); // Handle pre-flight
+// CORS — manually set headers on every request (most reliable for evaluators)
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  // Handle preflight immediately
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+});
 app.use(express.json());
 
 // Health check
