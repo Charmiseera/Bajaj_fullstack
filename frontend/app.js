@@ -6,7 +6,7 @@
 // ============================================================
 // CONFIG — update this to your deployed backend URL
 // ============================================================
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = 'https://bajaj-fullstack-mokd.onrender.com';
 
 // ============================================================
 // Example payload from the spec
@@ -22,15 +22,15 @@ const EXAMPLE_INPUT = [
 // ============================================================
 // DOM refs
 // ============================================================
-const nodeInput   = document.getElementById('nodeInput');
-const submitBtn   = document.getElementById('submitBtn');
-const btnSpinner  = document.getElementById('btnSpinner');
-const btnText     = submitBtn.querySelector('.btn-text');
-const btnArrow    = submitBtn.querySelector('.btn-arrow');
+const nodeInput = document.getElementById('nodeInput');
+const submitBtn = document.getElementById('submitBtn');
+const btnSpinner = document.getElementById('btnSpinner');
+const btnText = submitBtn.querySelector('.btn-text');
+const btnArrow = submitBtn.querySelector('.btn-arrow');
 const loadExample = document.getElementById('loadExample');
-const clearBtn    = document.getElementById('clearBtn');
-const errorMsg    = document.getElementById('errorMsg');
-const errorText   = document.getElementById('errorText');
+const clearBtn = document.getElementById('clearBtn');
+const errorMsg = document.getElementById('errorMsg');
+const errorText = document.getElementById('errorText');
 const resultsSection = document.getElementById('resultsSection');
 const copyJsonBtn = document.getElementById('copyJson');
 
