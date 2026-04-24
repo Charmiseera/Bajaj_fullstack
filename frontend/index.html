@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BFHL — Hierarchy Analyzer</title>
+  <meta name="description" content="SRM Full Stack Engineering Challenge — Interactive node hierarchy analyzer powered by the BFHL REST API." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Background particles -->
+  <div class="bg-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="app-wrapper">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="logo-text">BFHL <span class="logo-accent">Analyzer</span></span>
+        </div>
+        <div class="header-badge">SRM Engineering Challenge</div>
+      </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="main">
+      <!-- Input Section -->
+      <section class="input-section glass-card">
+        <div class="section-header">
+          <div class="section-icon input-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <h1 class="section-title">Node Hierarchy Input</h1>
+            <p class="section-subtitle">Enter node edges (e.g. <code>A->B</code>) separated by commas or newlines</p>
+          </div>
+        </div>
+
+        <div class="input-area-wrapper">
+          <textarea
+            id="nodeInput"
+            class="node-textarea"
+            placeholder='A->B, A->C, B->D, C->E, E->F&#10;X->Y, Y->Z, Z->X&#10;hello, 1->2, A->'
+            spellcheck="false"
+            rows="6"
+          ></textarea>
+          <div class="input-hint">
+            <span class="hint-chip">✓ A->B</span>
+            <span class="hint-chip invalid">✗ AB->C</span>
+            <span class="hint-chip invalid">✗ A->A</span>
+            <span class="hint-chip invalid">✗ hello</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="loadExample" class="btn btn-ghost" type="button">Load Example</button>
+          <button id="clearBtn" class="btn btn-ghost" type="button">Clear</button>
+          <button id="submitBtn" class="btn btn-primary" type="button">
+            <span class="btn-text">Analyze Hierarchy</span>
+            <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="btn-spinner" id="btnSpinner" style="display:none">
+              <div class="spinner"></div>
+            </div>
+          </button>
+        </div>
+
+        <!-- Error message -->
+        <div id="errorMsg" class="error-msg" style="display:none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span id="errorText"></span>
+        </div>
+      </section>
+
+      <!-- Results Section -->
+      <section id="resultsSection" class="results-section" style="display:none">
+
+        <!-- Identity Banner -->
+        <div class="identity-banner glass-card">
+          <div class="identity-field">
+            <span class="identity-label">User ID</span>
+            <span class="identity-value mono" id="userId"></span>
+          </div>
+          <div class="identity-divider"></div>
+          <div class="identity-field">
+            <span class="identity-label">Email</span>
+            <span class="identity-value mono" id="emailId"></span>
+          </div>
+          <div class="identity-divider"></div>
+          <div class="identity-field">
+            <span class="identity-label">Roll Number</span>
+            <span class="identity-value mono" id="rollNumber"></span>
+          </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid" id="summaryGrid">
+          <div class="summary-card glass-card">
+            <div class="summary-icon trees-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L8 8H4l8 8-2.5 6H14.5L12 16l8-8h-4L12 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="summary-content">
+              <div class="summary-number" id="totalTrees">0</div>
+              <div class="summary-label">Valid Trees</div>
+            </div>
+          </div>
+          <div class="summary-card glass-card">
+            <div class="summary-icon cycles-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 11-6.219-8.56M21 3v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="summary-content">
+              <div class="summary-number" id="totalCycles">0</div>
+              <div class="summary-label">Cyclic Groups</div>
+            </div>
+          </div>
+          <div class="summary-card glass-card">
+            <div class="summary-icon root-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="summary-content">
+              <div class="summary-number" id="largestRoot">—</div>
+              <div class="summary-label">Largest Tree Root</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hierarchies -->
+        <div class="section-label-row">
+          <h2 class="section-label">Hierarchies</h2>
+          <span class="count-badge" id="hierarchyCount">0</span>
+        </div>
+        <div class="hierarchies-grid" id="hierarchiesGrid"></div>
+
+        <!-- Two-column: Invalid & Duplicates -->
+        <div class="meta-grid">
+          <div class="meta-card glass-card">
+            <div class="meta-card-header">
+              <div class="meta-icon invalid-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <span>Invalid Entries</span>
+              <span class="count-badge-sm" id="invalidCount">0</span>
+            </div>
+            <div class="badge-list" id="invalidList">
+              <span class="empty-state">None found</span>
+            </div>
+          </div>
+          <div class="meta-card glass-card">
+            <div class="meta-card-header">
+              <div class="meta-icon dup-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <span>Duplicate Edges</span>
+              <span class="count-badge-sm" id="dupCount">0</span>
+            </div>
+            <div class="badge-list" id="dupList">
+              <span class="empty-state">None found</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Raw JSON -->
+        <details class="raw-json-details glass-card">
+          <summary class="raw-json-summary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="16 18 22 12 16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="8 6 2 12 8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Raw JSON Response
+          </summary>
+          <div class="raw-json-body">
+            <button class="copy-btn" id="copyJson" type="button">Copy</button>
+            <pre class="json-pre" id="rawJson"></pre>
+          </div>
+        </details>
+
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>SRM Full Stack Engineering Challenge &mdash; BFHL Hierarchy Analyzer</span>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
