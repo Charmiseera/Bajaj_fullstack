@@ -5,8 +5,13 @@ const bfhlRouter = require('./routes/bfhl');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors()); // Enable CORS for all origins
+// CORS — open for all origins (evaluator calls from unknown origin per spec)
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+app.options('*', cors()); // Handle pre-flight
 app.use(express.json());
 
 // Health check
